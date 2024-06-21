@@ -7,7 +7,13 @@ import { GET, requireUser } from "shared/api";
 async function throwAnyErrors<T, O, Media extends `${string}/${string}`>(
   responsePromise: Promise<FetchResponse<T, O, Media>>
 ) {
-  /* unchanged */
+  const { data, error, response } = await responsePromise;
+
+  if (error !== undefined) {
+    throw json(error, { status: response.status });
+  }
+
+  return data as NonNullable<typeof data>;
 }
 
 /** Amount of articles on one page. */
@@ -20,6 +26,8 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 
   if (url.searchParams.get("source") === "my-feed") {
     const userSession = await requireUser(request);
+
+    console.log("test");
 
     return json(
       await promiseHash({
